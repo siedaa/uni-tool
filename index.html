@@ -2,19 +2,76 @@
 <html>
 <head>
   <title>University Lookup Tool</title>
+
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: linear-gradient(to right, #4facfe, #00f2fe);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+    }
+
+    .box {
+      background: white;
+      padding: 30px;
+      border-radius: 10px;
+      width: 350px;
+      text-align: center;
+      box-shadow: 0px 0px 15px rgba(0,0,0,0.2);
+    }
+
+    h2 {
+      color: #333;
+    }
+
+    input {
+      width: 80%;
+      padding: 10px;
+      margin-top: 10px;
+      border-radius: 5px;
+      border: 1px solid #ccc;
+      font-size: 16px;
+    }
+
+    button {
+      margin-top: 15px;
+      padding: 10px 20px;
+      border: none;
+      border-radius: 5px;
+      background-color: #4facfe;
+      color: white;
+      font-size: 16px;
+      cursor: pointer;
+    }
+
+    button:hover {
+      background-color: #00c6ff;
+    }
+
+    #result {
+      margin-top: 20px;
+      font-size: 18px;
+      font-weight: bold;
+      color: #333;
+    }
+  </style>
 </head>
-<body style="font-family: Arial; padding: 20px;">
 
-  <h2>Exam Seating Lookup</h2>
+<body>
 
-  <label>Enter Roll Number:</label><br><br>
-  <input type="number" id="rollInput">
-  <button onclick="findSeat()">Find</button>
+  <div class="box">
+    <h2>Exam Seating Lookup</h2>
 
-  <p id="result"></p>
+    <input type="number" id="rollInput" placeholder="Enter Roll Number">
+    <br>
+    <button onclick="findSeat()">Find Seat</button>
+
+    <p id="result"></p>
+  </div>
 
   <script>
-    // Dummy data (like university file)
     const data = [
       { roll: 101, room: "A-12", seat: 5 },
       { roll: 102, room: "B-3", seat: 9 },
