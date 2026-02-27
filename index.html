@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>University Lookup Tool</title>
+</head>
+<body style="font-family: Arial; padding: 20px;">
+
+  <h2>Exam Seating Lookup</h2>
+
+  <label>Enter Roll Number:</label><br><br>
+  <input type="number" id="rollInput">
+  <button onclick="findSeat()">Find</button>
+
+  <p id="result"></p>
+
+  <script>
+    // Dummy data (like university file)
+    const data = [
+      { roll: 101, room: "A-12", seat: 5 },
+      { roll: 102, room: "B-3", seat: 9 },
+      { roll: 103, room: "C-7", seat: 1 },
+      { roll: 104, room: "D-2", seat: 6 },
+      { roll: 105, room: "E-4", seat: 3 }
+    ];
+
+    function findSeat() {
+      const rollNo = document.getElementById("rollInput").value;
+      let found = false;
+
+      for (let i = 0; i < data.length; i++) {
+        if (data[i].roll == rollNo) {
+          document.getElementById("result").innerText =
+            "Room: " + data[i].room + " | Seat: " + data[i].seat;
+          found = true;
+          break;
+        }
+      }
+
+      if (!found) {
+        document.getElementById("result").innerText =
+          "Roll number not found!";
+      }
+    }
+  </script>
+
+</body>
+</html>
