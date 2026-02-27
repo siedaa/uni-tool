@@ -3,41 +3,32 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Pasdaran Contribution Tracker | Phase 1</title>
+    <title>Pasdaran Contribution Tracker</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
         body { font-family: 'Inter', sans-serif; background-color: #f8fafc; }
         .glass-card { background: rgba(255, 255, 255, 0.95); backdrop-filter: blur(10px); border: 1px solid rgba(226, 232, 240, 0.8); }
-        .contribution-cell { min-width: 90px; text-align: center; font-size: 0.85rem; }
-        .missing-payment { color: #cbd5e1; background-color: transparent; }
+        .contribution-cell { min-width: 80px; text-align: center; font-size: 0.85rem; transition: all 0.2s; }
+        .missing-payment { color: #cbd5e1; }
         .has-payment { color: #059669; font-weight: 600; background-color: #ecfdf5; }
         .table-container::-webkit-scrollbar { height: 8px; }
         .table-container::-webkit-scrollbar-track { background: #f1f1f1; }
         .table-container::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
         .sticky-col { position: sticky; left: 0; background: white; z-index: 10; border-right: 1px solid #e2e8f0; }
+        tr:hover .sticky-col { background: #f8fafc; }
     </style>
 </head>
 <body class="min-h-screen">
 
     <!-- LOGIN OVERLAY -->
     <div id="loginOverlay" class="fixed inset-0 z-50 flex items-center justify-center bg-slate-900 bg-opacity-95">
-        <div class="bg-white p-8 rounded-2xl shadow-2xl max-w-md w-full mx-4">
-            <div class="text-center mb-6">
-                <div class="bg-blue-100 text-blue-600 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
-                    </svg>
-                </div>
-                <h1 class="text-2xl font-bold text-gray-800">Pasdaran Portal</h1>
-                <p class="text-gray-500 mt-2">Finance Management System Phase 1</p>
-            </div>
+        <div class="bg-white p-8 rounded-2xl shadow-2xl max-w-md w-full mx-4 text-center">
+            <h1 class="text-2xl font-bold text-gray-800 mb-6">Pasdaran Finance Portal</h1>
             <form id="loginForm" class="space-y-4">
-                <input type="password" id="passwordInput" placeholder="Access Password" 
-                    class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none outline-none">
-                <button type="submit" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 rounded-lg transition-all">Login</button>
-                <p id="loginError" class="text-red-500 text-sm text-center hidden">Access Denied.</p>
+                <input type="password" id="passwordInput" placeholder="Access Password" class="w-full px-4 py-3 border rounded-xl outline-none focus:ring-2 focus:ring-blue-500">
+                <button type="submit" class="w-full bg-blue-600 text-white font-bold py-3 rounded-xl hover:bg-blue-700 transition-all">Login</button>
+                <p id="loginError" class="text-red-500 text-sm hidden">Access Denied.</p>
             </form>
         </div>
     </div>
@@ -45,253 +36,157 @@
     <!-- MAIN CONTENT -->
     <div id="mainContent" class="hidden">
         <header class="bg-white border-b sticky top-0 z-30 shadow-sm">
-            <div class="max-w-[1600px] mx-auto px-4 py-4">
-                <div class="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
-                    <div class="flex items-center gap-4">
-                        <div class="bg-blue-600 p-2 rounded-lg text-white">
-                            <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" /></svg>
-                        </div>
-                        <div>
-                            <h1 class="text-xl font-bold text-gray-900 leading-tight">Monthly Contribution Report</h1>
-                            <p class="text-xs text-gray-500 font-medium uppercase tracking-wider" id="statusLabel">Waiting for data upload...</p>
-                        </div>
+            <div class="max-w-[1600px] mx-auto px-6 py-4 flex flex-col md:flex-row items-center justify-between gap-4">
+                <div class="flex items-center gap-3">
+                    <div class="bg-blue-600 p-2 rounded-lg text-white">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" /></svg>
                     </div>
-                    
-                    <div class="flex flex-wrap items-center gap-2">
-                        <div class="relative group">
-                            <label class="cursor-pointer bg-emerald-600 hover:bg-emerald-700 text-white px-4 py-2 rounded-lg text-sm font-semibold transition-all flex items-center gap-2 shadow-sm">
-                                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" /></svg>
-                                Import Excel
-                                <input type="file" id="excelUpload" class="hidden" accept=".xlsx, .xls, .csv">
-                            </label>
-                        </div>
-
-                        <select id="yearFilter" class="bg-white border border-gray-300 text-gray-700 text-sm rounded-lg p-2 outline-none focus:ring-2 focus:ring-blue-500">
-                            <option value="S(25-26)">S (2025-2026)</option>
-                            <option value="S(24-25)">S (2024-2025)</option>
-                            <option value="B(25-26)">B (2025-2026)</option>
-                            <option value="B(24-25)">B (2024-2025)</option>
-                        </select>
-                        
-                        <div class="relative">
-                            <input type="text" id="nameSearch" placeholder="Search member..." class="pl-9 pr-4 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 outline-none w-48">
-                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 absolute left-3 top-2.5 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" /></svg>
-                        </div>
-
-                        <button onclick="logout()" class="p-2 text-gray-400 hover:text-red-500 transition-colors">
-                            <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" /></svg>
-                        </button>
+                    <h1 class="text-xl font-bold text-gray-900">Contribution Ledger</h1>
+                </div>
+                
+                <div class="flex flex-wrap items-center gap-3">
+                    <div class="flex bg-gray-100 rounded-xl p-1">
+                        <button onclick="updateType('S')" id="btnS" class="px-4 py-1.5 rounded-lg text-sm font-bold transition-all bg-white shadow-sm text-blue-600">Sisters</button>
+                        <button onclick="updateType('B')" id="btnB" class="px-4 py-1.5 rounded-lg text-sm font-bold transition-all text-gray-500">Brothers</button>
                     </div>
+                    <select id="yearFilter" onchange="renderDashboard()" class="bg-white border border-gray-200 text-sm font-bold rounded-xl px-4 py-2 outline-none">
+                        <option value="25-26">2025-2026</option>
+                        <option value="24-25">2024-2025</option>
+                    </select>
+                    <input type="text" id="nameSearch" oninput="renderDashboard()" placeholder="Search..." class="px-4 py-2 border rounded-xl text-sm outline-none w-48 shadow-sm">
+                    <button onclick="logout()" class="text-gray-400 hover:text-red-500"><svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" /></svg></button>
                 </div>
             </div>
         </header>
 
-        <main class="max-w-[1600px] mx-auto px-4 py-8 space-y-8">
-            <!-- Summary Stats -->
+        <main class="max-w-[1600px] mx-auto px-6 py-8 space-y-8">
             <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-                <div class="glass-card p-6 rounded-2xl">
-                    <p class="text-sm font-medium text-gray-500">Total Collected (Current Filter)</p>
-                    <p class="text-3xl font-bold text-gray-900 mt-1" id="statTotal">PKR 0</p>
-                </div>
-                <div class="glass-card p-6 rounded-2xl">
-                    <p class="text-sm font-medium text-gray-500">Active Members</p>
-                    <p class="text-3xl font-bold text-blue-600 mt-1" id="statMembers">0</p>
-                </div>
-                <div class="glass-card p-6 rounded-2xl">
-                    <p class="text-sm font-medium text-gray-500">Average Contribution</p>
-                    <p class="text-3xl font-bold text-emerald-600 mt-1" id="statAvg">PKR 0</p>
-                </div>
+                <div class="glass-card p-6 rounded-3xl border-l-4 border-l-blue-600"><p class="text-xs font-bold text-gray-400 uppercase">Total Collected</p><p class="text-3xl font-black mt-2" id="statTotal">PKR 0</p></div>
+                <div class="glass-card p-6 rounded-3xl border-l-4 border-l-emerald-500"><p class="text-xs font-bold text-gray-400 uppercase">Active Members</p><p class="text-3xl font-black text-emerald-600 mt-2" id="statMembers">0</p></div>
+                <div class="glass-card p-6 rounded-3xl border-l-4 border-l-amber-500"><p class="text-xs font-bold text-gray-400 uppercase">Avg / Member</p><p class="text-3xl font-black text-amber-600 mt-2" id="statAvg">PKR 0</p></div>
             </div>
-
-            <!-- Tables -->
-            <div id="tableSection" class="space-y-12">
-                <!-- Content generated via JS -->
-            </div>
+            <div id="tableSection" class="min-h-[400px]"></div>
         </main>
     </div>
 
     <script>
-        // Month definitions matching your Excel pattern (Sep to Aug)
-        const MONTHS_MAP = {
-            "2024-09": "Sep", "2024-10": "Oct", "2024-11": "Nov", "2024-12": "Dec",
-            "2025-01": "Jan", "2025-02": "Feb", "2025-03": "Mar", "2025-04": "Apr",
-            "2025-05": "May", "2025-06": "Jun", "2025-07": "Jul", "2025-08": "Aug",
-            "2025-09": "Sep", "2025-10": "Oct", "2025-11": "Nov", "2025-12": "Dec",
-            "2026-01": "Jan", "2026-02": "Feb", "2026-03": "Mar", "2026-04": "Apr",
-            "2026-05": "May", "2026-06": "Jun", "2026-07": "Jul", "2026-08": "Aug"
-        };
+        let allData = [];
+        let currentType = 'S';
 
-        let membersData = [];
-        const AUTH_CONFIG = { password: "org123" };
+        // Update these if your CSV filenames change
+        const FILE_PATHS = [
+            { type: 'S', year: '25-26', path: 'Pasdaran Monthly Contribution Report.xlsx - S(25-26).csv' },
+            { type: 'S', year: '24-25', path: 'Pasdaran Monthly Contribution Report.xlsx - S(24-25).csv' },
+            { type: 'B', year: '25-26', path: 'Pasdaran Monthly Contribution Report.xlsx - B(25-26).csv' },
+            { type: 'B', year: '24-25', path: 'Pasdaran Monthly Contribution Report.xlsx - B(24-25).csv' }
+        ];
 
-        function init() {
-            if (sessionStorage.getItem('isLoggedIn') === 'true') showDashboard();
+        async function loadData() {
+            allData = [];
+            for (const file of FILE_PATHS) {
+                try {
+                    const response = await fetch(file.path);
+                    if (!response.ok) continue;
+                    const text = await response.text();
+                    parseCSV(text, file.type, file.year);
+                } catch (e) { console.error("Error loading " + file.path, e); }
+            }
+            renderDashboard();
         }
 
-        // --- AUTH ---
+        function parseCSV(text, type, year) {
+            const lines = text.split('\n').map(l => l.split(','));
+            let dateRowIndex = lines.findIndex(row => row.join(',').includes('2024-') || row.join(',').includes('2025-'));
+            if (dateRowIndex === -1) return;
+
+            const dates = lines[dateRowIndex].map(d => d.substring(0, 7));
+            
+            for (let i = dateRowIndex + 2; i < lines.length; i++) {
+                const row = lines[i];
+                if (!row || row.length < 3) continue;
+                let name = row[1]?.trim();
+                if (!name || name === '#REF!' || name === 'Names' || !isNaN(name)) continue;
+
+                const contributions = {};
+                dates.forEach((date, idx) => {
+                    if (date.startsWith('202')) {
+                        const val = parseFloat(row[idx]?.replace(/[^0-9.]/g, '')) || 0;
+                        contributions[date] = val;
+                    }
+                });
+
+                allData.push({ name, type, year, contributions });
+            }
+        }
+
+        function renderDashboard() {
+            const year = document.getElementById('yearFilter').value;
+            const search = document.getElementById('nameSearch').value.toLowerCase();
+            const filtered = allData.filter(m => m.type === currentType && m.year === year && m.name.toLowerCase().includes(search));
+            
+            let total = 0;
+            filtered.forEach(m => Object.values(m.contributions).forEach(v => total += v));
+            document.getElementById('statTotal').innerText = `PKR ${total.toLocaleString()}`;
+            document.getElementById('statMembers').innerText = filtered.length;
+            document.getElementById('statAvg').innerText = `PKR ${filtered.length ? Math.round(total/filtered.length).toLocaleString() : 0}`;
+
+            const startYear = year === '24-25' ? '2024' : '2025';
+            const endYear = year === '24-25' ? '2025' : '2026';
+            const months = [`${startYear}-09`,`${startYear}-10`,`${startYear}-11`,`${startYear}-12`,`${endYear}-01`,`${endYear}-02`,`${endYear}-03`,`${endYear}-04`,`${endYear}-05`,`${endYear}-06`,`${endYear}-07`,`${endYear}-08`];
+
+            const html = `
+                <div class="glass-card rounded-3xl overflow-hidden shadow-sm overflow-x-auto">
+                    <table class="w-full text-left border-collapse">
+                        <thead class="bg-gray-50/50">
+                            <tr>
+                                <th class="px-6 py-4 sticky-col bg-gray-50/50 text-[10px] font-black uppercase text-gray-400">Name</th>
+                                ${months.map(m => `<th class="px-3 py-4 text-center text-[10px] font-black uppercase text-gray-400">${m.split('-')[1]}</th>`).join('')}
+                                <th class="px-6 py-4 text-right text-[10px] font-black uppercase text-gray-400">Total</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            ${filtered.map(m => {
+                                let rowTotal = 0;
+                                return `
+                                    <tr class="hover:bg-gray-50/50 border-t border-gray-100">
+                                        <td class="px-6 py-4 font-bold text-gray-800 sticky-col bg-white text-sm">${m.name}</td>
+                                        ${months.map(mon => {
+                                            const amt = m.contributions[mon] || 0;
+                                            rowTotal += amt;
+                                            return `<td class="px-3 py-4 contribution-cell ${amt > 0 ? 'has-payment' : 'missing-payment'}">${amt > 0 ? amt : '—'}</td>`;
+                                        }).join('')}
+                                        <td class="px-6 py-4 text-right font-black text-gray-900 bg-gray-50/20">PKR ${rowTotal}</td>
+                                    </tr>`;
+                            }).join('')}
+                        </tbody>
+                    </table>
+                </div>`;
+            document.getElementById('tableSection').innerHTML = filtered.length ? html : '<div class="text-center py-20 text-gray-400">No data found</div>';
+        }
+
+        function updateType(t) {
+            currentType = t;
+            document.getElementById('btnS').className = t === 'S' ? "px-4 py-1.5 rounded-lg text-sm font-bold bg-white shadow-sm text-blue-600" : "px-4 py-1.5 rounded-lg text-sm font-bold text-gray-500";
+            document.getElementById('btnB').className = t === 'B' ? "px-4 py-1.5 rounded-lg text-sm font-bold bg-white shadow-sm text-blue-600" : "px-4 py-1.5 rounded-lg text-sm font-bold text-gray-500";
+            renderDashboard();
+        }
+
         document.getElementById('loginForm').addEventListener('submit', (e) => {
             e.preventDefault();
-            if (document.getElementById('passwordInput').value === AUTH_CONFIG.password) {
+            if (document.getElementById('passwordInput').value === "org123") {
                 sessionStorage.setItem('isLoggedIn', 'true');
                 showDashboard();
-            } else {
-                document.getElementById('loginError').classList.remove('hidden');
-            }
+            } else { document.getElementById('loginError').classList.remove('hidden'); }
         });
 
         function showDashboard() {
             document.getElementById('loginOverlay').classList.add('hidden');
             document.getElementById('mainContent').classList.remove('hidden');
+            loadData();
         }
 
-        function logout() {
-            sessionStorage.removeItem('isLoggedIn');
-            location.reload();
-        }
-
-        // --- DATA PROCESSING ---
-        document.getElementById('excelUpload').addEventListener('change', (e) => {
-            const file = e.target.files[0];
-            if (!file) return;
-
-            const reader = new FileReader();
-            reader.onload = (event) => {
-                const data = new Uint8Array(event.target.result);
-                const workbook = XLSX.read(data, { type: 'array' });
-                
-                // We'll process all sheets if they match our Batch patterns
-                membersData = [];
-                workbook.SheetNames.forEach(sheetName => {
-                    const worksheet = workbook.Sheets[sheetName];
-                    const rows = XLSX.utils.sheet_to_json(worksheet, { header: 1 });
-                    
-                    // Logic to detect batch from sheet name or row 1
-                    let detectedBatch = sheetName.includes('(') ? sheetName : "S(25-26)";
-                    if (rows[0] && rows[0][0]) {
-                        if (rows[0][0].includes('2024-Aug, 2025')) detectedBatch = rows[0][0].includes('(S)') ? 'S(24-25)' : 'B(24-25)';
-                        if (rows[0][0].includes('2025-Aug, 2026')) detectedBatch = rows[0][0].includes('(S)') ? 'S(25-26)' : 'B(25-26)';
-                    }
-
-                    // Headers are usually on row index 4 or 5 based on your CSV
-                    const headerRowIndex = 2; // Date headers row
-                    const dataStartRow = 4; // First name row
-                    
-                    const dateHeaders = rows[headerRowIndex] || [];
-                    const type = detectedBatch.startsWith('S') ? 'Sister' : 'Brother';
-
-                    for (let i = dataStartRow; i < rows.length; i++) {
-                        const row = rows[i];
-                        const name = row[1];
-                        if (!name || name === 'Monthly Total:' || name === 'Names') continue;
-
-                        const contributions = {};
-                        // Loop through columns starting from column 2 (index 2)
-                        for (let col = 2; col <= 13; col++) {
-                            const dateStr = dateHeaders[col]; // usually "2024-09-01"
-                            if (!dateStr) continue;
-                            const key = dateStr.toString().substring(0, 7); // "2024-09"
-                            contributions[key] = parseFloat(row[col]) || 0;
-                        }
-
-                        membersData.push({
-                            name: name,
-                            year: detectedBatch,
-                            type: type,
-                            contributions: contributions
-                        });
-                    }
-                });
-
-                document.getElementById('statusLabel').innerText = `Data Synced Successfully (${membersData.length} records)`;
-                renderTables();
-            };
-            reader.readAsArrayBuffer(file);
-        });
-
-        document.getElementById('yearFilter').addEventListener('change', renderTables);
-        document.getElementById('nameSearch').addEventListener('input', renderTables);
-
-        function renderTables() {
-            const year = document.getElementById('yearFilter').value;
-            const search = document.getElementById('nameSearch').value.toLowerCase();
-            const container = document.getElementById('tableSection');
-            
-            const filtered = membersData.filter(m => m.year === year && m.name.toLowerCase().includes(search));
-            
-            // Calc Stats
-            let totalColl = 0;
-            filtered.forEach(m => Object.values(m.contributions).forEach(v => totalColl += v));
-            document.getElementById('statTotal').innerText = `PKR ${totalColl.toLocaleString()}`;
-            document.getElementById('statMembers').innerText = filtered.length;
-            document.getElementById('statAvg').innerText = `PKR ${filtered.length ? Math.round(totalColl / filtered.length).toLocaleString() : 0}`;
-
-            const sisters = filtered.filter(m => m.type === 'Sister');
-            const brothers = filtered.filter(m => m.type === 'Brother');
-
-            container.innerHTML = `
-                ${renderTableBlock('Sisters', sisters, 'pink', year)}
-                ${renderTableBlock('Brothers', brothers, 'blue', year)}
-            `;
-        }
-
-        function renderTableBlock(title, data, color, yearCode) {
-            const startYear = yearCode.includes('24-25') ? '2024' : '2025';
-            const endYear = yearCode.includes('24-25') ? '2025' : '2026';
-            
-            // Build Month Keys for this year
-            const yearMonths = [
-                `${startYear}-09`, `${startYear}-10`, `${startYear}-11`, `${startYear}-12`,
-                `${endYear}-01`, `${endYear}-02`, `${endYear}-03`, `${endYear}-04`,
-                `${endYear}-05`, `${endYear}-06`, `${endYear}-07`, `${endYear}-08`
-            ];
-
-            const headerHtml = yearMonths.map(m => `<th class="px-3 py-4 text-center font-semibold text-gray-500">${MONTHS_MAP[m]}</th>`).join('');
-
-            const rowsHtml = data.length ? data.map(m => {
-                let rowTotal = 0;
-                const cells = yearMonths.map(monthKey => {
-                    const amt = m.contributions[monthKey] || 0;
-                    rowTotal += amt;
-                    return `<td class="px-3 py-4 contribution-cell ${amt > 0 ? 'has-payment' : 'missing-payment'}">${amt > 0 ? amt : '—'}</td>`;
-                }).join('');
-
-                return `
-                    <tr class="hover:bg-gray-50 transition-colors border-b border-gray-100">
-                        <td class="px-6 py-4 font-bold text-gray-800 sticky-col">${m.name}</td>
-                        ${cells}
-                        <td class="px-6 py-4 text-right font-black text-gray-900 bg-gray-50/50">PKR ${rowTotal}</td>
-                    </tr>
-                `;
-            }).join('') : `<tr><td colspan="14" class="py-12 text-center text-gray-400 italic">No records found for this category.</td></tr>`;
-
-            return `
-                <section>
-                    <div class="flex items-center justify-between mb-4">
-                        <div class="flex items-center gap-3">
-                            <div class="w-3 h-8 bg-${color}-500 rounded-full"></div>
-                            <h2 class="text-2xl font-black text-gray-800">${title}</h2>
-                        </div>
-                        <span class="bg-${color}-100 text-${color}-700 px-3 py-1 rounded-full text-sm font-bold">${data.length} Members</span>
-                    </div>
-                    <div class="glass-card rounded-2xl overflow-hidden shadow-sm table-container overflow-x-auto">
-                        <table class="w-full text-left border-collapse">
-                            <thead>
-                                <tr class="bg-gray-50/80 text-[10px] uppercase tracking-widest border-b border-gray-200">
-                                    <th class="px-6 py-4 font-black text-gray-400 sticky-col bg-gray-50/80">Full Name</th>
-                                    ${headerHtml}
-                                    <th class="px-6 py-4 text-right font-black text-gray-400">Grand Total</th>
-                                </tr>
-                            </thead>
-                            <tbody class="divide-y divide-gray-100">
-                                ${rowsHtml}
-                            </tbody>
-                        </table>
-                    </div>
-                </section>
-            `;
-        }
-
-        window.onload = init;
+        function logout() { sessionStorage.removeItem('isLoggedIn'); location.reload(); }
+        window.onload = () => { if (sessionStorage.getItem('isLoggedIn') === 'true') showDashboard(); };
     </script>
 </body>
 </html>
